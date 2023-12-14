@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.18.0/cytoscape.min.js"></script>
+  <title>p5.js Vertical Graph with Cytoscape.js</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #cy {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="cy"></div>
+  <script>
+const wait = (milliseconds) => new Promise(resolve => setTimeout(resolve, milliseconds));
+    const words = ["a", "close", "up", "of", "a", "television", "screen", "with", "a", "lot", "of", "different", "pictures"];
+    let currentIndex = 0;
+    const upperNodePosition = { x: window.innerWidth / 2, y: window.innerHeight / 3 };
+    const lowerNodePosition = { x: window.innerWidth / 2, y: 2 * window.innerHeight / 3 };
+    let cy;
+
+    function setup() {
+      noCanvas();
+
+      // Create Cytoscape instance
+      cy = cytoscape({
+        container: document.getElementById('cy'),
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'label': 'data(label)',
+              'text-valign': 'center',
+              'text-halign': 'center',
+              'background-color': '#eee',
+              'border-width': 1,
+              'border-color': '#ccc',
+              'width': '100px',
+              'height': '50px',
+              'font-size': '18px'
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 1,
+              'line-color': '#ccc',
+              'target-arrow-color': '#ccc',
+              'target-arrow-shape': 'triangle'
+            }
+          }
+        ],
+        layout: { name: 'preset' }
+      });
+
+      // Initial nodes
+      createNode(words[currentIndex], upperNodePosition);
+      createNode(words[currentIndex], lowerNodePosition);
+      createEdge('node0', 'node1');
+      const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+
+      function removeTop(currentIndex){
+          cy.remove('#node' + (currentIndex -2));
+          // Move the lower node to upperNodePosition
+          sleep(2000).then(() => {
+            console.log('#node' + (currentIndex - 1))
+            cy.$('#node' + (currentIndex - 1)).position(upperNodePosition);
+          })
+      }
+
+      // Animation loop
+      function drawNode() {
+        sleep(2000).then(() => {
+            if (currentIndex < words.length) {
+              // Remove the upper node
+              //cy.remove('#node' + (currentIndex -2));
+              // Move the lower node to upperNodePosition
+              //cy.$('#node' + (currentIndex - 1)).position(upperNodePosition);
+                removeTop(currentIndex)
+              // Draw a new node with the current word at lowerNodePosition
+            sleep(2000).then(()=>{
+              createLowerNode(words[currentIndex-1], currentIndex);
+            })
+              //createNode(words[currentIndex+1], lowerNodePosition);
+              //createEdge('node' + (currentIndex - 2), 'node' + (currentIndex - 1));
+
+              // Continue the animation
+              setTimeout(drawNode, 1000); // Adjust the duration as needed
+            }
+
+        console.log('Start');
+    });
+    }
+
+          // Start the animation loop
+    drawNode();
+}
+
+    function createNode(word, position) {
+      const nodeId = 'node' + currentIndex;
+      currentIndex++;
+      const newNode = { data: { id: nodeId, label: word }, position: position };
+      cy.add(newNode);
+    }
+    function createLowerNode(word, idx) {
+      const nodeId = 'node' + idx;
+      currentIndex++;
+        console.log("lower node : "+word);
+      const newNode = { data: { id: nodeId, label: word }, position: lowerNodePosition };
+      cy.add(newNode).position(lowerNodePosition);
+        if (idx%2==0) {
+            console.log(idx%2==0)
+            cy.$('#node' + (currentIndex - 1)).position(upperNodePosition);
+        } else {
+console.log("na")
+    let pos = { x: window.innerWidth / 2, y: 4 * window.innerHeight / 3 };
+            cy.$('#node' + (currentIndex - 1)).position(pos);
+}
+cy.center();
+    }
+    function createUpperNode(word) {
+      const nodeId = 'node' + currentIndex;
+      currentIndex++;
+      const newNode = { data: { id: nodeId, label: word }, position: upperNodePosition };
+      cy.add(newNode);
+    }
+
+    function createEdge(sourceId, targetId) {
+      const edgeId = 'edge' + currentIndex;
+      const newEdge = { data: { id: edgeId, source: sourceId, target: targetId } };
+      cy.add(newEdge);
+    }
+  </script>
+</body>
+</html>
+
+
