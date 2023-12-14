@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.18.0/cytoscape.min.js"></script>
+  <title>p5.js Vertical Graph Animation with Cytoscape.js</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #cy {
+      width: 400px;
+      height: 200px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="cy"></div>
+  <script>
+    const words = ["fear", "the", "old", "blood"];
+    let currentIndex = 0;
+    let upperNodePosition;
+
+    function setup() {
+      noCanvas();
+
+      // Create Cytoscape instance
+      const cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: [
+          { data: { id: 'node1', label: 'Hello' }, position: { x: 200, y: 100 } },
+          { data: { id: 'node2', label: 'World' }, position: { x: 200, y: 300 } },
+          { data: { id: 'edge1', source: 'node1', target: 'node2' } }
+        ],
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'label': 'data(label)',
+              'text-valign': 'center',
+              'text-halign': 'center',
+              'background-color': '#eee',
+              'border-width': 1,
+              'border-color': '#ccc',
+              'width': '100px',
+              'height': '50px'
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 1,
+              'line-color': '#ccc',
+              'target-arrow-color': '#ccc',
+              'target-arrow-shape': 'triangle'
+            }
+          }
+        ],
+        layout: { name: 'preset' }
+      });
+
+      // Initial upperNodePosition
+      upperNodePosition = { x: cy.$('#node1').position().x, y: cy.$('#node1').position().y };
+
+      // Animation loop
+      function drawNode() {
+        if (currentIndex < words.length) {
+          const currentWord = words[currentIndex];
+
+          // Remove the "Hello" node
+          cy.remove('#node1');
+
+          // Save lowerNodePosition
+          const lowerNodePosition = { x: cy.$('#node2').position().x, y: cy.$('#node2').position().y };
+
+          // Move "World" node to upperNodePosition
+          cy.$('#node2').position(upperNodePosition);
+
+          // Draw a new node with the current word at lowerNodePosition
+          const newNodeId = 'node' + (currentIndex + 3); // Assuming the node IDs continue incrementally
+          const newNode = { data: { id: newNodeId, label: currentWord }, position: lowerNodePosition };
+          cy.add(newNode);
+
+          // Update upperNodePosition for the next iteration
+          upperNodePosition = lowerNodePosition;
+
+          currentIndex++;
+
+          // Continue the animation
+          setTimeout(drawNode, 1000); // Adjust the duration as needed
+        }
+      }
+
+      // Start the animation loop
+      drawNode();
+    }
+  </script>
+</body>
+</html>
